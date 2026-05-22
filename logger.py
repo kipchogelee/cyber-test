@@ -4,17 +4,27 @@ import subprocess
 from garminconnect import Garmin
 
 # ========================================================
-# 🛰️ 賽博大戰艦：動態自定義課表 + Garmin 手機看板完全體
+# 🛰️ 賽博大戰艦：內建自定義課表 + Garmin 手機看板（單純流）
 # ========================================================
 
 # 1. 填入你真實登入 Garmin Connect App 的電郵和密碼
 GARMIN_EMAIL = "chonkin@gmail.com"
 GARMIN_PASSWORD = "N7vbkech"
 
+# 2. 🎖️ 指揮官自訂課表輸入區：直接在這裡修改你的每週訓練計劃！
+WEEKLY_SCHEDULE = {
+    "星期一": "400m (1'28\") R1'30\" + 200m (90%) R5' x 4-5 速度間歇 🏃‍♂️",
+    "星期二": "下肢大髀、臀部重力訓練，加強核心力量 🏋️‍♂️",
+    "星期三": "5-8 km 穩定配速節奏跑（嚴格控制心率）",
+    "星期四": "40-50分鐘 輕鬆有氧恢復跑",
+    "星期五": "拉伸、超量恢復休息日（賽博修整）",
+    "星期六": "15-18 km 針對性長距離耐力訓練 (LSD)",
+    "星期日": "完全放鬆，陪奶奶過夜與休息 ☕"
+}
+
 PROJECT_DIR = os.path.expanduser("~/projects/cyber-test")
 LOG_FILE = os.path.join(PROJECT_DIR, "activity_log.txt")
 HTML_FILE = os.path.join(PROJECT_DIR, "index.html")
-SCHEDULE_FILE = os.path.join(PROJECT_DIR, "schedule.txt")
 
 def get_garmin_data():
     print("🛰️ 正在連線至 Garmin 國際雲端伺服器...")
@@ -25,7 +35,6 @@ def get_garmin_data():
         today_str = datetime.date.today().isoformat()
         summary = client.get_user_summary(today_str)
         
-        # 安全提取數據，避免 NoneType 報錯
         avg_hr = summary.get('averageHeartRate', 0) or 0
         max_hr = summary.get('maxHeartRate', 0) or 0
         distance_m = summary.get('totalDistanceInMeters', 0) or 0
@@ -35,31 +44,18 @@ def get_garmin_data():
         return avg_hr, max_hr, distance_km
     except Exception as e:
         print(f"⚠️ Garmin 數據未就緒或未跑步 (可忽略): {e}")
-        return 0, 0, 0  # 報錯時當作 0 處理，確保後續網頁能正常更新
+        return 0, 0, 0
 
-def load_custom_schedule():
-    """讀取用戶自己輸入的課表"""
+def build_schedule_html():
+    """將程式內輸入的字典直接轉化為網頁 HTML"""
     html_lines = ""
-    if os.path.exists(SCHEDULE_FILE):
-        with open(SCHEDULE_FILE, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            for line in lines:
-                if line.strip():
-                    # 切割星期與內容
-                    if "：" in line:
-                        day, content = line.split("：", 1)
-                    elif ":" in line:
-                        day, content = line.split(":", 1)
-                    else:
-                        day, content = "訓練", line
-                    html_lines += f'<div class="day"><span class="day-name">{day.strip()}：</span>{content.strip()}</div>\n'
-    else:
-        html_lines = "<div class='day'>未偵測到 schedule.txt 課表檔案</div>"
+    for day, content in WEEKLY_SCHEDULE.items():
+        html_lines += f'<div class="day"><span class="day-name">{day}：</span>{content}</div>\n'
     return html_lines
 
 def generate_html(avg_hr, max_hr, distance):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    schedule_html = load_custom_schedule()
+    schedule_html = build_schedule_html()
     
     if distance == 0:
         status_text = "🟢 賽博修整 / 重力恢復日"
@@ -134,7 +130,7 @@ def push_to_github():
         print(f"❌ Git 推送失敗: {e}")
 
 if __name__ == "__main__":
-    print("--- 🏁 啟動強大相容版手機看板流水線 ---")
+    print("--- 🏁 啟動程式內建課表流水線 ---")
     avg_hr, max_hr, distance_km = get_garmin_data()
     generate_html(avg_hr, max_hr, distance_km)
     push_to_github()
