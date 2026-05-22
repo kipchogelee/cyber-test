@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kenclaw 賽博跑步儀表板</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a202c; color: #fff; padding: 20px; margin: 0; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { color: #4fd1c5; text-align: center; font-size: 24px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #718096; font-size: 12px; margin-bottom: 25px; }
+        .status { background: #2d3748; padding: 15px; border-radius: 12px; border-left: 5px solid #4fd1c5; margin-bottom: 20px; }
+        .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .card { background: #1a202c; padding: 10px; border-radius: 8px; text-align: center; }
+        .card h3 { margin: 0; font-size: 11px; color: #a0aec0; }
+        .card p { margin: 5px 0 0 0; font-size: 20px; font-weight: bold; color: #f6ad55; }
+        .card p span { font-size: 11px; color: #a0aec0; }
+        .schedule { background: #2d3748; padding: 20px; border-radius: 12px; }
+        .schedule h2 { margin-top: 0; font-size: 18px; color: #4fd1c5; border-bottom: 1px solid #4a5568; padding-bottom: 10px; }
+        .day { margin-bottom: 12px; font-size: 14px; line-height: 1.5; border-bottom: 1px dashed #3f4e64; padding-bottom: 8px; }
+        .day:last-child { border-bottom: none; }
+        .day-name { font-weight: bold; color: #63b3ed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 KENCLAW 賽博大戰艦</h1>
+        <div class="subtitle">更新時間: 2026-05-22 22:35:47</div>
+        
+        <div class="status">
+            <h3 style="margin:0 0 5px 0; font-size:14px; color:#a0aec0;">今日動態</h3>
+            <span style="font-size:18px; font-weight:bold;">🟢 賽博修整 / 重力恢復日</span>
+            <p style='color: #a0aec0; font-size:14px; margin-top:10px;'>今日無跑步數據。肌肉正在超量恢復，記得加強下肢力量訓練！🏋️‍♂️</p>
+        </div>
+
+        <div class="schedule">
+            <h2>📅 指揮官自訂跑步課表</h2>
+            <div class='day'>未偵測到 schedule.txt 課表檔案</div>
+        </div>
+    </div>
+</body>
+</html>
