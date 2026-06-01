@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import subprocess
 from garminconnect import Garmin
@@ -10,6 +11,9 @@ from garminconnect import Garmin
 # 1. 填入你真實登入 Garmin Connect App 的電郵和密碼
 GARMIN_EMAIL = "chonkin@gmail.com"
 GARMIN_PASSWORD = "N7vbkech"
+
+# Token 緩存路徑（避免每次重新登入觸發 429）
+TOKEN_STORE = os.path.expanduser("~/.garmin_tokens.json")
 
 # 2. 🎖️ 指揮官自訂課表輸入區：直接在這裡修改你的每週訓練計劃！
 WEEKLY_SCHEDULE = {
@@ -26,25 +30,68 @@ PROJECT_DIR = os.path.expanduser("~/projects/cyber-test")
 LOG_FILE = os.path.join(PROJECT_DIR, "activity_log.txt")
 HTML_FILE = os.path.join(PROJECT_DIR, "index.html")
 
+
+def get_garmin_client():
+    """
+    取得 Garmin client。
+    優先使用緩存 token，避免每次登入觸發 429 rate limit。
+    若 token 失效或不存在，才重新登入並保存新 token。
+    """
+    client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD, is_cn=False)
+
+    # 嘗試用緩存 token 登入
+    if os.path.exists(TOKEN_STORE):
+        print("🔑 找到緩存 token，嘗試免密登入...")
+        try:
+            with open(TOKEN_STORE, "r") as f:
+                saved_tokens = json.load(f)
+            client.login(tokenstore=saved_tokens)
+            print("✅ Token 登入成功，無需重新密碼登入")
+            return client
+        except Exception as e:
+            print(f"⚠️ Token 已失效，改用密碼重新登入: {e}")
+
+    # Token 不存在或失效，重新密碼登入
+    print("🔐 正在使用密碼登入 Garmin...")
+    client.login()
+
+    # 保存新 token 以供下次使用
+    try:
+        tokens = client.garth.dumps()
+        with open(TOKEN_STORE, "w") as f:
+            json.dump(tokens, f)
+        os.chmod(TOKEN_STORE, 0o600)
+        print(f"💾 新 token 已保存至 {TOKEN_STORE}")
+    except Exception as e:
+        print(f"⚠️ Token 保存失敗（不影響本次運行）: {e}")
+
+    return client
+
+
 def get_garmin_data():
     print("🛰️ 正在連線至 Garmin 國際雲端伺服器...")
     try:
-        client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD)
-        client.login()
-        
+        client = get_garmin_client()
+
         today_str = datetime.date.today().isoformat()
         summary = client.get_user_summary(today_str)
-        
+
         avg_hr = summary.get('averageHeartRate', 0) or 0
         max_hr = summary.get('maxHeartRate', 0) or 0
         distance_m = summary.get('totalDistanceInMeters', 0) or 0
         distance_km = distance_m / 1000
-        
+
         print(f"🎯 數據抓取成功！距離: {distance_km:.2f} km | 平均心率: {avg_hr} bpm")
         return avg_hr, max_hr, distance_km
+
     except Exception as e:
-        print(f"⚠️ Garmin 數據未就緒或未跑步 (可忽略): {e}")
+        print(f"❌ Garmin 數據獲取失敗: {e}")
+        # 若是 token 問題，刪除緩存讓下次重新登入
+        if os.path.exists(TOKEN_STORE) and ("401" in str(e) or "403" in str(e) or "token" in str(e).lower()):
+            os.remove(TOKEN_STORE)
+            print("🗑️ 已刪除失效 token，下次將重新登入")
         return 0, 0, 0
+
 
 def build_schedule_html():
     """將程式內輸入的字典直接轉化為網頁 HTML"""
@@ -53,10 +100,11 @@ def build_schedule_html():
         html_lines += f'<div class="day"><span class="day-name">{day}：</span>{content}</div>\n'
     return html_lines
 
+
 def generate_html(avg_hr, max_hr, distance):
     current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     schedule_html = build_schedule_html()
-    
+
     if distance == 0:
         status_text = "🟢 賽博修整 / 重力恢復日"
         data_display = "<p style='color: #a0aec0; font-size:14px; margin-top:10px;'>今日無跑步數據。肌肉正在超量恢復，記得加強下肢力量訓練！🏋️‍♂️</p>"
@@ -117,6 +165,7 @@ def generate_html(avg_hr, max_hr, distance):
         f.write(html_content)
     print("🎯 手機網頁 Dashboard (index.html) 更新成功！")
 
+
 def push_to_github():
     print("🐙 正在同步至 GitHub...")
     try:
@@ -128,6 +177,7 @@ def push_to_github():
         print("🎉 【全線通車】手機端網頁已完美同步！")
     except Exception as e:
         print(f"❌ Git 推送失敗: {e}")
+
 
 if __name__ == "__main__":
     print("--- 🏁 啟動程式內建課表流水線 ---")
