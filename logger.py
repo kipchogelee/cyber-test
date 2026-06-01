@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 import subprocess
 from garminconnect import Garmin
@@ -12,7 +11,7 @@ from garminconnect import Garmin
 GARMIN_EMAIL = "chonkin@gmail.com"
 GARMIN_PASSWORD = "N7vbkech"
 
-# Token 緩存路徑（避免每次重新登入觸發 429）
+# Token 緩存路徑（避免每次重新登入觸發 429 rate limit）
 TOKEN_STORE = os.path.expanduser("~/.garmin_tokens.json")
 
 # 2. 🎖️ 指揮官自訂課表輸入區：直接在這裡修改你的每週訓練計劃！
@@ -34,8 +33,8 @@ HTML_FILE = os.path.join(PROJECT_DIR, "index.html")
 def get_garmin_client():
     """
     取得 Garmin client。
-    優先使用緩存 token，避免每次登入觸發 429 rate limit。
-    若 token 失效或不存在，才重新登入並保存新 token。
+    優先使用緩存 token（~/.garmin_tokens.json），避免每次登入觸發 429 rate limit。
+    若 token 失效或不存在，才重新密碼登入並保存新 token。
     """
     client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD, is_cn=False)
 
@@ -43,13 +42,18 @@ def get_garmin_client():
     if os.path.exists(TOKEN_STORE):
         print("🔑 找到緩存 token，嘗試免密登入...")
         try:
-            with open(TOKEN_STORE, "r") as f:
-                saved_tokens = json.load(f)
-            client.login(tokenstore=saved_tokens)
+            client.client.load(TOKEN_STORE)
+            # 驗證 token 是否有效（嘗試取得用戶名）
+            _ = client.get_full_name()
             print("✅ Token 登入成功，無需重新密碼登入")
             return client
         except Exception as e:
             print(f"⚠️ Token 已失效，改用密碼重新登入: {e}")
+            # 刪除失效 token
+            try:
+                os.remove(TOKEN_STORE)
+            except Exception:
+                pass
 
     # Token 不存在或失效，重新密碼登入
     print("🔐 正在使用密碼登入 Garmin...")
@@ -57,9 +61,7 @@ def get_garmin_client():
 
     # 保存新 token 以供下次使用
     try:
-        tokens = client.garth.dumps()
-        with open(TOKEN_STORE, "w") as f:
-            json.dump(tokens, f)
+        client.client.dump(TOKEN_STORE)
         os.chmod(TOKEN_STORE, 0o600)
         print(f"💾 新 token 已保存至 {TOKEN_STORE}")
     except Exception as e:
@@ -86,10 +88,15 @@ def get_garmin_data():
 
     except Exception as e:
         print(f"❌ Garmin 數據獲取失敗: {e}")
-        # 若是 token 問題，刪除緩存讓下次重新登入
-        if os.path.exists(TOKEN_STORE) and ("401" in str(e) or "403" in str(e) or "token" in str(e).lower()):
-            os.remove(TOKEN_STORE)
-            print("🗑️ 已刪除失效 token，下次將重新登入")
+        # 若懷疑是 token 問題，刪除緩存讓下次重新登入
+        if os.path.exists(TOKEN_STORE) and any(
+            kw in str(e).lower() for kw in ["401", "403", "token", "unauthorized", "expired"]
+        ):
+            try:
+                os.remove(TOKEN_STORE)
+                print("🗑️ 已刪除失效 token，下次將重新登入")
+            except Exception:
+                pass
         return 0, 0, 0
 
 
