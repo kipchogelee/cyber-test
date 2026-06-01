@@ -38,18 +38,15 @@ def get_garmin_client():
     """
     client = Garmin(GARMIN_EMAIL, GARMIN_PASSWORD, is_cn=False)
 
-    # 嘗試用緩存 token 登入
+    # 嘗試用緩存 token 登入（正確方式：login(tokenstore=路徑)）
     if os.path.exists(TOKEN_STORE):
         print("🔑 找到緩存 token，嘗試免密登入...")
         try:
-            client.client.load(TOKEN_STORE)
-            # 驗證 token 是否有效（嘗試取得用戶名）
-            _ = client.get_full_name()
-            print("✅ Token 登入成功，無需重新密碼登入")
+            client.login(tokenstore=TOKEN_STORE)
+            print(f"✅ Token 登入成功（用戶: {client.display_name}）")
             return client
         except Exception as e:
             print(f"⚠️ Token 已失效，改用密碼重新登入: {e}")
-            # 刪除失效 token
             try:
                 os.remove(TOKEN_STORE)
             except Exception:
