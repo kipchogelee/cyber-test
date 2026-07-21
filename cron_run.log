@@ -416,3 +416,29 @@ To github.com:kipchogelee/cyber-test.git
 🐙 正在同步至 GitHub...
 🎉 【全線通車】手機端網頁已完美同步！
 --- 🏁 流程執行完畢 ---
+[main 65be4e8] 🛰️ Dashboard Updated - 2026-07-17
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+To github.com:kipchogelee/cyber-test.git
+   b2371d1..65be4e8  main -> main
+--- 🏁 啟動程式內建課表流水線 ---
+🛰️ 正在連線至 Garmin 國際雲端伺服器...
+🔑 找到緩存 token，嘗試免密登入...
+✅ Token 登入成功（用戶: e242b3b6-9c02-4496-9fad-a897847fa230）
+🎯 數據抓取成功！距離: 0.00 km | 平均心率: 0 bpm
+🎯 手機網頁 Dashboard (index.html) 更新成功！
+🐙 正在同步至 GitHub...
+🎉 【全線通車】手機端網頁已完美同步！
+--- 🏁 流程執行完畢 ---
+mobile+cffi failed: Failed to perform, curl: (6) Could not resolve host: sso.garmin.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+mobile+requests failed: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /mobile/api/login?clientId=GCM_IOS_DARK&locale=en-US&service=https%3A%2F%2Fmobile.integration.garmin.com%2Fgcm%2Fios (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)"))
+widget+cffi failed: Failed to perform, curl: (6) Could not resolve host: sso.garmin.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+portal+cffi failed: Failed to perform, curl: (6) Could not resolve host: sso.garmin.com. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+portal+requests failed: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /portal/sso/en-US/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)"))
+Login failed: All login strategies exhausted: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /portal/sso/en-US/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)")) (status=None)
+Traceback (most recent call last):
+  File "/home/kenclaw/projects/cyber-test/venv/lib/python3.12/site-packages/garminconnect/__init__.py", line 594, in login
+    mfa_status, _legacy_token = self.client.login(
+                                ^^^^^^^^^^^^^^^^^^
+  File "/home/kenclaw/projects/cyber-test/venv/lib/python3.12/site-packages/garminconnect/client.py", line 300, in login
+    raise GarminConnectConnectionError(
+garminconnect.exceptions.GarminConnectConnectionError: All login strategies exhausted: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /portal/sso/en-US/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)"))
