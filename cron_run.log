@@ -442,3 +442,22 @@ Traceback (most recent call last):
   File "/home/kenclaw/projects/cyber-test/venv/lib/python3.12/site-packages/garminconnect/client.py", line 300, in login
     raise GarminConnectConnectionError(
 garminconnect.exceptions.GarminConnectConnectionError: All login strategies exhausted: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /portal/sso/en-US/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)"))
+[main 80bcc0c] 🛰️ Dashboard Updated - 2026-07-21
+ 2 files changed, 27 insertions(+), 1 deletion(-)
+ssh: Could not resolve hostname github.com: Temporary failure in name resolution
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+--- 🏁 啟動程式內建課表流水線 ---
+🛰️ 正在連線至 Garmin 國際雲端伺服器...
+🔑 找到緩存 token，嘗試免密登入...
+⚠️ Token 已失效，改用密碼重新登入: Failed to retrieve social profile
+🔐 正在使用密碼登入 Garmin...
+❌ Garmin 數據獲取失敗: Login failed: All login strategies exhausted: HTTPSConnectionPool(host='sso.garmin.com', port=443): Max retries exceeded with url: /portal/sso/en-US/sign-in?clientId=GarminConnect&service=https%3A%2F%2Fconnect.garmin.com%2Fapp (Caused by NameResolutionError("HTTPSConnection(host='sso.garmin.com', port=443): Failed to resolve 'sso.garmin.com' ([Errno -3] Temporary failure in name resolution)"))
+🎯 手機網頁 Dashboard (index.html) 更新成功！
+🐙 正在同步至 GitHub...
+❌ Git 推送失敗: Command '['git', 'push']' returned non-zero exit status 128.
+--- 🏁 流程執行完畢 ---
+mobile+cffi returned 429: Mobile login returned 429 — IP rate limited by Garmin
+mobile+requests returned 429: Mobile login returned 429 — IP rate limited by Garmin
