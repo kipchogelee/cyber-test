@@ -7,9 +7,21 @@ from garminconnect import Garmin
 # 🛰️ 賽博大戰艦：內建自定義課表 + Garmin 手機看板（單純流）
 # ========================================================
 
-# 1. 填入你真實登入 Garmin Connect App 的電郵和密碼
-GARMIN_EMAIL = "chonkin@gmail.com"
-GARMIN_PASSWORD = "N7vbkech"
+# 1. Garmin 登入資料：改由環境變數或專案目錄的 .env 檔提供（.env 已列入 .gitignore，唔好再寫死喺 code）
+#    .env 格式（每行一項）：GARMIN_EMAIL=你的電郵 / GARMIN_PASSWORD=你的密碼
+def _load_env_file():
+    env_path = os.path.join(os.path.expanduser("~/projects/cyber-test"), ".env")
+    if os.path.exists(env_path):
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+
+_load_env_file()
+GARMIN_EMAIL = os.environ.get("GARMIN_EMAIL", "")
+GARMIN_PASSWORD = os.environ.get("GARMIN_PASSWORD", "")
 
 # Token 緩存路徑（避免每次重新登入觸發 429 rate limit）
 TOKEN_STORE = os.path.expanduser("~/.garmin_tokens.json")
@@ -175,6 +187,10 @@ def push_to_github():
     try:
         os.chdir(PROJECT_DIR)
         subprocess.run(["git", "add", "."], check=True)
+        status = subprocess.run(["git", "status", "--porcelain"], check=True, capture_output=True, text=True)
+        if not status.stdout.strip():
+            print("ℹ️ 冇新變更，跳過 commit / push")
+            return
         commit_msg = f"🛰️ Dashboard Updated - {datetime.date.today().isoformat()}"
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         subprocess.run(["git", "push"], check=True)
@@ -185,6 +201,9 @@ def push_to_github():
 
 if __name__ == "__main__":
     print("--- 🏁 啟動程式內建課表流水線 ---")
+    if not GARMIN_EMAIL or not GARMIN_PASSWORD:
+        print("❌ 未設定 Garmin 登入資料：請喺專案目錄建立 .env（GARMIN_EMAIL / GARMIN_PASSWORD）或設定同名環境變數")
+        raise SystemExit(1)
     avg_hr, max_hr, distance_km = get_garmin_data()
     generate_html(avg_hr, max_hr, distance_km)
     push_to_github()
